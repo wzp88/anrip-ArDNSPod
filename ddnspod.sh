@@ -5,6 +5,7 @@
 # Dynamic DNS using DNSPod API
 # Original by anrip<mail@anrip.com>, http://www.anrip.com/ddnspod
 # Edited by ProfFan
+# modify by wzp 20231225 for nas machine use
 #################################################
 
 # OS Detection
@@ -13,11 +14,13 @@ case $(uname) in
     echo "Linux"
     arIpAddress() {
         local extip
-        extip=$(ip -o -4 addr list | grep -Ev '\s(docker|lo)' | awk '{print $4}' | cut -d/ -f1 | grep -Ev '(^127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$)|(^10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$)|(^172\.1[6-9]{1}[0-9]{0,1}\.[0-9]{1,3}\.[0-9]{1,3}$)|(^172\.2[0-9]{1}[0-9]{0,1}\.[0-9]{1,3}\.[0-9]{1,3}$)|(^172\.3[0-1]{1}[0-9]{0,1}\.[0-9]{1,3}\.[0-9]{1,3}$)|(^192\.168\.[0-9]{1,3}\.[0-9]{1,3}$)')
-        if [ "x${extip}" = "x" ]; then
-	        extip=$(ip -o -4 addr list | grep -Ev '\s(docker|lo)' | awk '{print $4}' | cut -d/ -f1 )
-        fi
-        echo $extip
+#        extip=$(ip -o -4 addr list | grep -Ev '\s(docker|lo)' | awk '{print $4}' | cut -d/ -f1 | grep -Ev '(^127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$)|(^10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$)|(^172\.1[6-9]{1}[0-9]{0,1}\.[0-9]{1,3}\.[0-9]{1,3}$)|(^172\.2[0-9]{1}[0-9]{0,1}\.[0-9]{1,3}\.[0-9]{1,3}$)|(^172\.3[0-1]{1}[0-9]{0,1}\.[0-9]{1,3}\.[0-9]{1,3}$)|(^192\.168\.[0-9]{1,3}\.[0-9]{1,3}$)')
+#        if [ "x${extip}" = "x" ]; then
+#	        extip=$(ip -o -4 addr list | grep -Ev '\s(docker|lo)' | awk '{print $4}' | cut -d/ -f1 )
+#        fi
+#        echo $extip
+        extip=$(curl -s ifconfig.me)
+		echo $extip
     }
     ;;
   'FreeBSD')
@@ -122,18 +125,9 @@ arDdnsInfo() {
     # Last IP
     recordIP=$(arApiPost "Record.Info" "domain_id=${domainID}&record_id=${recordID}")
     recordIP=$(echo $recordIP | sed 's/.*,"value":"\([0-9\.]*\)".*/\1/')
+	
+	echo "$recordIP"
 
-    # Output IP
-    case "$recordIP" in 
-      [1-9][0-9]*)
-        echo $recordIP
-        return 0
-        ;;
-      *)
-        echo "Get Record Info Failed!"
-        return 1
-        ;;
-    esac
 }
 
 # Get data
